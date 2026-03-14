@@ -13,24 +13,91 @@
         #app-screen { display: flex; flex-direction: column; height: 100vh; }
         .container { flex: 1; display: flex; overflow: hidden; }
         
+        /* 🌟 홈 화면 시작 버튼 애니메이션 🌟 */
+        #start-btn {
+            padding: 15px 40px; border-radius: 30px; background: #fca311; color: #14213d; 
+            border: none; font-size: 1.2rem; cursor: pointer; font-weight: bold; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            transition: all 0.3s ease; /* 애니메이션 속도 조절 */
+        }
+        #start-btn:hover {
+            background: #ffb703;
+            transform: translateY(-5px) scale(1.02); /* 위로 5px 뜨면서 살짝 커짐 */
+            box-shadow: 0 15px 30px rgba(252, 163, 17, 0.5); /* 그림자가 진해짐 */
+        }
+
+        /* 🌟 헤더 홈으로 버튼 애니메이션 🌟 */
+        .home-btn {
+            background: transparent; border: 1px solid #4ea8de; color: #4ea8de; 
+            padding: 5px 15px; border-radius: 5px; cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .home-btn:hover {
+            background: rgba(78, 168, 222, 0.15);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 10px rgba(78, 168, 222, 0.3);
+        }
+
         /* 사이드바 및 버튼 */
         .sidebar { width: 300px; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); overflow-y: auto; display: flex; flex-direction: column; }
         #button-container { flex: 1; overflow-y: auto; margin-bottom: 15px; }
-        .btn { width: 100%; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 5px; cursor: pointer; text-align: left; transition: 0.2s;}
-        .btn:hover { background: rgba(78, 168, 222, 0.3); border-color: #4ea8de; border: 1px solid rgba(78, 168, 222, 0.5); }
-        .btn.active { background: #4ea8de; color: #0b1320; font-weight: bold; }
         
-        /* 추가된 데이터 추가 버튼 스타일 */
-        .add-data-btn { width: 100%; background: transparent; border: 1px dashed #90e0ef; color: #90e0ef; padding: 12px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; margin-top: auto;}
-        .add-data-btn:hover { background: rgba(144, 224, 239, 0.1); }
+        /* 🌟 사이드바 단백질 선택 버튼 애니메이션 🌟 */
+        .btn { 
+            width: 100%; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.1); 
+            border: 1px solid transparent; color: white; border-radius: 5px; cursor: pointer; text-align: left; 
+            transition: all 0.3s ease; 
+        }
+        .btn:hover { 
+            background: rgba(78, 168, 222, 0.2); 
+            border-color: #4ea8de; 
+            transform: translateY(-3px); /* 3px 위로 떠오름 */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        /* 선택된 버튼은 눌려있는 느낌을 주기 위해 애니메이션 해제 */
+        .btn.active { background: #4ea8de; color: #0b1320; font-weight: bold; transform: none; box-shadow: none; border-color:#4ea8de; }
+        
+        /* 🌟 데이터 추가 버튼 애니메이션 🌟 */
+        .add-data-btn { 
+            width: 100%; background: transparent; border: 1px dashed #90e0ef; color: #90e0ef; 
+            padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: auto;
+            transition: all 0.3s ease;
+        }
+        .add-data-btn:hover { 
+            background: rgba(144, 224, 239, 0.1); 
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(144, 224, 239, 0.2);
+            border: 1px solid #90e0ef;
+        }
 
         /* 메인 콘텐츠 */
         .main-content { flex: 1; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
         .viewer-box { flex: 6; background: rgba(0,0,0,0.3); border-radius: 12px; position: relative; border: 1px solid rgba(255,255,255,0.1); }
         .info-box { flex: 4; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 4px solid #4ea8de; overflow-y: auto; }
         .action-buttons { display: flex; gap: 10px; margin-top: 15px; }
-        .highlight-btn { background: #fca311; color:#14213d; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s;}
-        .reset-btn { background: transparent; color: #4ea8de; border: 2px solid #4ea8de; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        
+        /* 🌟 줌인, 원래대로 액션 버튼 애니메이션 🌟 */
+        .highlight-btn { 
+            background: #fca311; color:#14213d; border: none; padding: 10px 20px; 
+            border-radius: 20px; font-weight: bold; cursor: pointer; 
+            transition: all 0.3s ease;
+        }
+        .highlight-btn:hover { 
+            background: #ffb703; 
+            transform: translateY(-3px); 
+            box-shadow: 0 5px 15px rgba(252, 163, 17, 0.4); 
+        }
+
+        .reset-btn { 
+            background: transparent; color: #4ea8de; border: 2px solid #4ea8de; 
+            padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; 
+            transition: all 0.3s ease;
+        }
+        .reset-btn:hover { 
+            background: rgba(78, 168, 222, 0.15); 
+            transform: translateY(-3px); 
+            box-shadow: 0 5px 15px rgba(78, 168, 222, 0.3); 
+        }
         
         /* 추가된 모달(입력창) 스타일 */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
@@ -42,9 +109,12 @@
         .input-group input:focus, .input-group textarea:focus { outline: none; border-color: #fca311; }
         .hint-text { font-size: 11px; color: #fca311; margin-top: 4px; display: block; }
         .modal-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        .modal-btns button { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
+        .modal-btns button { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; transition: all 0.2s ease;}
+        .modal-btns button:hover { transform: translateY(-2px); }
         .btn-cancel { background: #555; color: white; }
+        .btn-cancel:hover { background: #666; }
         .btn-save { background: #4ea8de; color: #0b1320; }
+        .btn-save:hover { background: #90e0ef; }
     </style>
 </head>
 <body>
@@ -52,19 +122,19 @@
     <div id="home-screen">
         <h1>🧬 BIOM 3D 단백질 갤러리</h1>
         <p id="loading-text" style="color:#fca311; font-weight:bold;">서버에서 데이터를 불러오는 중입니다...</p>
-        <button id="start-btn" class="hidden" onclick="startExploration()" style="padding:15px 40px; border-radius:30px; background:#fca311; color:#14213d; border:none; font-size:1.2rem; cursor:pointer; font-weight:bold; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">탐험 시작하기 🚀</button>
+        <button id="start-btn" class="hidden" onclick="startExploration()">탐험 시작하기 🚀</button>
     </div>
 
     <div id="app-screen" class="hidden">
         <header style="padding:15px 30px; background:rgba(0,0,0,0.4); border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
             <h2 style="margin:0; color:#4ea8de;">🧬 BIOM : 3D Protein Data Explorer</h2>
-            <button onclick="goHome()" style="background:transparent; border:1px solid #4ea8de; color:#4ea8de; padding:5px 15px; border-radius:5px; cursor:pointer;">🏠 홈으로</button>
+            <button class="home-btn" onclick="goHome()">🏠 홈으로</button>
         </header>
         <div class="container">
             <div class="sidebar">
                 <h3 style="color:#90e0ef; margin-top:0;">관찰 리스트</h3>
                 <div id="button-container"></div>
-                <button class="add-data-btn" onclick="checkPassword()">+ 데이터 추가</button>
+                <button class="add-data-btn" onclick="checkPassword()">+ 현장 데이터 추가</button>
             </div>
             <div class="main-content">
                 <div class="viewer-box"><div id="container-3Dmoljs" style="width:100%; height:100%; position:absolute;"></div></div>
@@ -123,25 +193,22 @@
         // 회장님의 앱스 스크립트 웹 앱 URL
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxVwrXfxX54cC_VGoQEw-ZWcwdw9WV9UY2vGhEruDGJQTST63l5YzYzcgefNzDSmrY/exec";
 
-        let proteinData = {};      // 구글 시트 + 로컬 데이터가 합쳐질 전체 데이터
-        let customData = {};       // 로컬에 추가로 저장된 데이터
+        let proteinData = {};      
+        let customData = {};       
         let viewer = null;
         let currentPdbId = '';
 
-        // 1. 기존에 현장에서 추가했던 로컬 데이터 불러오기
         const savedData = localStorage.getItem('biomCustomData');
         if (savedData) {
             customData = JSON.parse(savedData);
         }
 
-        // 2. 구글 시트 데이터 가져오기 (가장 먼저 실행)
         function fetchAppScriptData() {
             fetch(WEB_APP_URL)
                 .then(response => response.json())
                 .then(data => {
-                    proteinData = {}; // 초기화
+                    proteinData = {}; 
                     
-                    // 시트 데이터를 먼저 proteinData에 넣기
                     data.forEach(row => {
                         if (row.PDB_ID && row.PDB_ID.trim() !== '') {
                             let pdbId = row.PDB_ID.trim().toUpperCase();
@@ -173,7 +240,6 @@
                         }
                     });
 
-                    // 🌟 핵심 로직: 시트 데이터에 로컬(현장 추가) 데이터를 병합(덮어쓰기)
                     Object.assign(proteinData, customData);
 
                     document.getElementById('loading-text').classList.add('hidden');
@@ -182,7 +248,6 @@
                 })
                 .catch(error => {
                     console.error("에러 발생:", error);
-                    // 만약 오프라인이거나 구글 서버가 터졌을 경우, 현장에서 추가했던 데이터라도 보여주기 위한 안전장치
                     if(Object.keys(customData).length > 0) {
                         proteinData = customData;
                         document.getElementById('loading-text').classList.add('hidden');
@@ -195,7 +260,6 @@
                 });
         }
 
-        // 3. 버튼 렌더링
         function renderButtons() {
             const container = document.getElementById('button-container');
             container.innerHTML = '';
@@ -208,7 +272,6 @@
             });
         }
 
-        // 4. 탐험 시작 및 뷰어 기능
         function startExploration() {
             if(Object.keys(proteinData).length === 0) return;
             document.getElementById('home-screen').classList.add('hidden');
@@ -260,9 +323,6 @@
             viewer.render();
         }
 
-        // ==========================================
-        // 5. 관리자 데이터 현장 추가 (로컬 스토리지 결합)
-        // ==========================================
         function checkPassword() {
             const adminPassword = "biom2026"; 
             const pwd = prompt("현장 데이터 추가용 비밀번호를 입력하세요:");
@@ -327,7 +387,6 @@
                 targetStyle: targetStyle
             };
 
-            // 커스텀 데이터(로컬)와 전체 데이터 둘 다 업데이트
             customData[pdbId] = newProtein;
             proteinData[pdbId] = newProtein;
             localStorage.setItem('biomCustomData', JSON.stringify(customData));
@@ -337,7 +396,6 @@
             alert(`성공적으로 추가되었습니다!\n(이 데이터는 현재 컴퓨터에 임시 저장되며, 구글 시트에는 반영되지 않습니다.)`);
         }
 
-        // 스크립트 시작
         fetchAppScriptData();
     </script>
 </body>
