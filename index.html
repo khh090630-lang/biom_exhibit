@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>BIOM 단백질 3D 갤러리 (Apps Script + Add Data)</title>
+    <script src="https://3Dmol.org/build/3Dmol-min.js"></script>
+    <style>
+        /* 기본 스타일 */
+        body { margin: 0; font-family: 'Noto Sans KR', sans-serif; color: white; background: linear-gradient(135deg, #101c2c 0%, #1a365d 100%); height: 100vh; overflow: hidden; }
+        .hidden { display: none !important; }
+        #home-screen { display: flex; flex-direction: column; justify-content: center; align-items: center; height: 100vh; text-align: center; background: radial-gradient(circle at center, #1a365d 0%, #0b1320 100%); z-index: 100;}
+        #home-screen h1 { font-size: 3.5rem; color: #4ea8de; margin-bottom: 20px; letter-spacing: 2px; }
+        #app-screen { display: flex; flex-direction: column; height: 100vh; }
+        .container { flex: 1; display: flex; overflow: hidden; }
+        
+        /* 사이드바 및 버튼 */
+        .sidebar { width: 300px; padding: 20px; border-right: 1px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); overflow-y: auto; display: flex; flex-direction: column; }
+        #button-container { flex: 1; overflow-y: auto; margin-bottom: 15px; }
+        .btn { width: 100%; padding: 12px; margin-bottom: 8px; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 5px; cursor: pointer; text-align: left; transition: 0.2s;}
+        .btn:hover { background: rgba(78, 168, 222, 0.3); border-color: #4ea8de; border: 1px solid rgba(78, 168, 222, 0.5); }
+        .btn.active { background: #4ea8de; color: #0b1320; font-weight: bold; }
+        
+        /* 추가된 데이터 추가 버튼 스타일 */
+        .add-data-btn { width: 100%; background: transparent; border: 1px dashed #90e0ef; color: #90e0ef; padding: 12px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; margin-top: auto;}
+        .add-data-btn:hover { background: rgba(144, 224, 239, 0.1); }
+
+        /* 메인 콘텐츠 */
+        .main-content { flex: 1; padding: 25px; display: flex; flex-direction: column; gap: 20px; }
+        .viewer-box { flex: 6; background: rgba(0,0,0,0.3); border-radius: 12px; position: relative; border: 1px solid rgba(255,255,255,0.1); }
+        .info-box { flex: 4; padding: 20px; background: rgba(255,255,255,0.05); border-radius: 12px; border-left: 4px solid #4ea8de; overflow-y: auto; }
+        .action-buttons { display: flex; gap: 10px; margin-top: 15px; }
+        .highlight-btn { background: #fca311; color:#14213d; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        .reset-btn { background: transparent; color: #4ea8de; border: 2px solid #4ea8de; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.2s;}
+        
+        /* 추가된 모달(입력창) 스타일 */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.7); z-index: 1000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #1a365d; padding: 30px; border-radius: 15px; width: 450px; border: 1px solid #4ea8de; box-shadow: 0 15px 50px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto;}
+        .modal-box h2 { margin-top: 0; color: #90e0ef; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-bottom: 20px;}
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 13px; color: #add8e6; margin-bottom: 5px; }
+        .input-group input, .input-group textarea { width: 100%; box-sizing: border-box; padding: 10px; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.3); color: white; font-family: inherit;}
+        .input-group input:focus, .input-group textarea:focus { outline: none; border-color: #fca311; }
+        .hint-text { font-size: 11px; color: #fca311; margin-top: 4px; display: block; }
+        .modal-btns { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+        .modal-btns button { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-cancel { background: #555; color: white; }
+        .btn-save { background: #4ea8de; color: #0b1320; }
+    </style>
+</head>
+<body>
+
+    <div id="home-screen">
+        <h1>🧬 BIOM 3D 단백질 갤러리</h1>
+        <p id="loading-text" style="color:#fca311; font-weight:bold;">서버에서 데이터를 불러오는 중입니다...</p>
+        <button id="start-btn" class="hidden" onclick="startExploration()" style="padding:15px 40px; border-radius:30px; background:#fca311; color:#14213d; border:none; font-size:1.2rem; cursor:pointer; font-weight:bold; box-shadow: 0 10px 20px rgba(0,0,0,0.3);">탐험 시작하기 🚀</button>
+    </div>
+
+    <div id="app-screen" class="hidden">
+        <header style="padding:15px 30px; background:rgba(0,0,0,0.4); border-bottom:1px solid rgba(255,255,255,0.1); display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="margin:0; color:#4ea8de;">🧬 BIOM : 3D Protein Data Explorer</h2>
+            <button onclick="goHome()" style="background:transparent; border:1px solid #4ea8de; color:#4ea8de; padding:5px 15px; border-radius:5px; cursor:pointer;">🏠 홈으로</button>
+        </header>
+        <div class="container">
+            <div class="sidebar">
+                <h3 style="color:#90e0ef; margin-top:0;">관찰 리스트</h3>
+                <div id="button-container"></div>
+                <button class="add-data-btn" onclick="checkPassword()">+ 데이터 추가</button>
+            </div>
+            <div class="main-content">
+                <div class="viewer-box"><div id="container-3Dmoljs" style="width:100%; height:100%; position:absolute;"></div></div>
+                <div class="info-box">
+                    <h3 id="p-title" style="color:#4ea8de; margin-top:0;">단백질 선택</h3>
+                    <p id="p-desc" style="line-height:1.7; color:#e0e0e0;"></p>
+                    <div id="p-point-container" style="display:none; background:rgba(78,168,222,0.1); padding:20px; border-radius:10px; border:1px dashed #4ea8de;">
+                        <div><strong style="color:#90e0ef;">👀 3D 관전 포인트: </strong><span id="p-point"></span></div>
+                        <div class="action-buttons">
+                            <button id="btn-highlight" class="highlight-btn" onclick="highlightActiveSite()">🔍 핵심 부위 줌인</button>
+                            <button class="reset-btn" onclick="resetView()">🔄 원래대로</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="add-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h2>🧪 새로운 단백질 현장 추가</h2>
+            <div class="input-group">
+                <label>PDB ID (4자리 코드)</label>
+                <input type="text" id="input-pdb" placeholder="예: 1EMA" maxlength="4" style="text-transform: uppercase;">
+            </div>
+            <div class="input-group">
+                <label>버튼 이름</label>
+                <input type="text" id="input-btntitle" placeholder="예: 형광 단백질 (1EMA)">
+            </div>
+            <div class="input-group">
+                <label>메인 제목</label>
+                <input type="text" id="input-title" placeholder="예: 빛을 발산하는 녹색 형광 단백질">
+            </div>
+            <div class="input-group">
+                <label>과학적 설명</label>
+                <textarea id="input-desc" rows="2" placeholder="단백질의 특징을 설명해주세요."></textarea>
+            </div>
+            <div class="input-group">
+                <label>3D 관전 포인트</label>
+                <input type="text" id="input-point" placeholder="예: 중심부의 발광 구조를 찾아보세요.">
+            </div>
+            <div class="input-group">
+                <label>강조할 부위 번호 또는 이름 (선택)</label>
+                <input type="text" id="input-highlight" placeholder="예: 32, 215 또는 ZN">
+                <span class="hint-text">* 숫자 또는 영어를 적어주세요. 비워두면 줌인 버튼이 숨겨집니다.</span>
+            </div>
+
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeModal()">취소</button>
+                <button class="btn-save" onclick="saveNewProtein()">추가하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 회장님의 앱스 스크립트 웹 앱 URL
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxVwrXfxX54cC_VGoQEw-ZWcwdw9WV9UY2vGhEruDGJQTST63l5YzYzcgefNzDSmrY/exec";
+
+        let proteinData = {};      // 구글 시트 + 로컬 데이터가 합쳐질 전체 데이터
+        let customData = {};       // 로컬에 추가로 저장된 데이터
+        let viewer = null;
+        let currentPdbId = '';
+
+        // 1. 기존에 현장에서 추가했던 로컬 데이터 불러오기
+        const savedData = localStorage.getItem('biomCustomData');
+        if (savedData) {
+            customData = JSON.parse(savedData);
+        }
+
+        // 2. 구글 시트 데이터 가져오기 (가장 먼저 실행)
+        function fetchAppScriptData() {
+            fetch(WEB_APP_URL)
+                .then(response => response.json())
+                .then(data => {
+                    proteinData = {}; // 초기화
+                    
+                    // 시트 데이터를 먼저 proteinData에 넣기
+                    data.forEach(row => {
+                        if (row.PDB_ID && row.PDB_ID.trim() !== '') {
+                            let pdbId = row.PDB_ID.trim().toUpperCase();
+                            let targetSel = null;
+                            let targetStyle = null;
+
+                            if (row.highlight && row.highlight.toString().trim() !== '') {
+                                let hl = row.highlight.toString().trim();
+                                if (hl.toUpperCase() === "DNA") {
+                                    targetSel = {nucleic: true};
+                                    targetStyle = {sphere: {colorscheme: 'greenCarbon'}};
+                                } else if (/[a-zA-Z]/.test(hl)) {
+                                    targetSel = {resn: hl.toUpperCase().split(',').map(s=>s.trim())};
+                                    targetStyle = {sphere: {color: 'magenta'}};
+                                } else {
+                                    targetSel = {resi: hl.split(',').map(s=>s.trim())};
+                                    targetStyle = {sphere: {color: 'orange'}};
+                                }
+                            }
+
+                            proteinData[pdbId] = {
+                                btnTitle: row.btnTitle || "이름 없음",
+                                title: row.title || "제목 없음",
+                                desc: row.desc || "설명 없음",
+                                point: row.point || "",
+                                targetSel: targetSel,
+                                targetStyle: targetStyle
+                            };
+                        }
+                    });
+
+                    // 🌟 핵심 로직: 시트 데이터에 로컬(현장 추가) 데이터를 병합(덮어쓰기)
+                    Object.assign(proteinData, customData);
+
+                    document.getElementById('loading-text').classList.add('hidden');
+                    document.getElementById('start-btn').classList.remove('hidden');
+                    renderButtons();
+                })
+                .catch(error => {
+                    console.error("에러 발생:", error);
+                    // 만약 오프라인이거나 구글 서버가 터졌을 경우, 현장에서 추가했던 데이터라도 보여주기 위한 안전장치
+                    if(Object.keys(customData).length > 0) {
+                        proteinData = customData;
+                        document.getElementById('loading-text').classList.add('hidden');
+                        document.getElementById('start-btn').classList.remove('hidden');
+                        alert("구글 시트 연결에 실패하여 오프라인 데이터만 불러왔습니다.");
+                        renderButtons();
+                    } else {
+                        document.getElementById('loading-text').innerText = "데이터 연결 실패! (주소를 다시 확인해주세요)";
+                    }
+                });
+        }
+
+        // 3. 버튼 렌더링
+        function renderButtons() {
+            const container = document.getElementById('button-container');
+            container.innerHTML = '';
+            Object.keys(proteinData).forEach(id => {
+                const btn = document.createElement('button');
+                btn.className = 'btn';
+                btn.innerText = proteinData[id].btnTitle;
+                btn.onclick = () => loadProtein(id, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        // 4. 탐험 시작 및 뷰어 기능
+        function startExploration() {
+            if(Object.keys(proteinData).length === 0) return;
+            document.getElementById('home-screen').classList.add('hidden');
+            document.getElementById('app-screen').classList.remove('hidden');
+            if(!viewer) viewer = $3Dmol.createViewer("container-3Dmoljs", {backgroundColor: "rgba(0,0,0,0)"});
+            viewer.resize();
+            const firstId = Object.keys(proteinData)[0];
+            const firstBtn = document.querySelector('.btn');
+            loadProtein(firstId, firstBtn);
+        }
+
+        function goHome() {
+            document.getElementById('app-screen').classList.add('hidden');
+            document.getElementById('home-screen').classList.remove('hidden');
+        }
+
+        function loadProtein(id, btn) {
+            currentPdbId = id;
+            const d = proteinData[id];
+            document.getElementById('p-title').innerText = d.title;
+            document.getElementById('p-desc').innerText = d.desc;
+            document.getElementById('p-point-container').style.display = 'block';
+            document.getElementById('p-point').innerText = d.point;
+            document.getElementById('btn-highlight').style.display = d.targetSel ? 'inline-block' : 'none';
+            document.querySelectorAll('.btn').forEach(b=>b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+            
+            viewer.clear();
+            $3Dmol.download("pdb:" + id, viewer, {style:{cartoon:{color:'spectrum'}}}, function(){
+                viewer.zoomTo(); viewer.animate({spin:true});
+            });
+        }
+
+        function highlightActiveSite() {
+            const d = proteinData[currentPdbId];
+            if(!d.targetSel) return;
+            viewer.animate({spin:false});
+            viewer.setStyle({}, {cartoon:{color:'white', opacity:0.4}});
+            viewer.setStyle(d.targetSel, d.targetStyle);
+            viewer.zoomTo(d.targetSel, 1500);
+            viewer.render();
+        }
+
+        function resetView() {
+            if(!viewer) return;
+            viewer.setStyle({}, { cartoon: { color: 'spectrum' } });
+            viewer.zoomTo(1000);
+            viewer.animate({spin:true});
+            viewer.render();
+        }
+
+        // ==========================================
+        // 5. 관리자 데이터 현장 추가 (로컬 스토리지 결합)
+        // ==========================================
+        function checkPassword() {
+            const adminPassword = "biom2026"; 
+            const pwd = prompt("현장 데이터 추가용 비밀번호를 입력하세요:");
+            
+            if (pwd === adminPassword) {
+                document.getElementById('add-modal').classList.remove('hidden');
+                document.getElementById('input-pdb').value = '';
+                document.getElementById('input-btntitle').value = '';
+                document.getElementById('input-title').value = '';
+                document.getElementById('input-desc').value = '';
+                document.getElementById('input-point').value = '';
+                document.getElementById('input-highlight').value = '';
+            } else if (pwd !== null) {
+                alert("비밀번호가 일치하지 않습니다.");
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('add-modal').classList.add('hidden');
+        }
+
+        function saveNewProtein() {
+            const pdbId = document.getElementById('input-pdb').value.trim().toUpperCase();
+            const btnTitle = document.getElementById('input-btntitle').value.trim();
+            const title = document.getElementById('input-title').value.trim();
+            const desc = document.getElementById('input-desc').value.trim();
+            const point = document.getElementById('input-point').value.trim();
+            const highlightRaw = document.getElementById('input-highlight').value.trim();
+
+            if (!pdbId || !btnTitle || !title || !desc || !point) {
+                alert("모든 필수 항목을 입력해주세요!");
+                return;
+            }
+
+            if (pdbId.length !== 4) {
+                alert("PDB ID는 영문/숫자 4자리여야 합니다. (예: 1EMA)");
+                return;
+            }
+
+            let targetSel = null;
+            let targetStyle = null;
+
+            if (highlightRaw) {
+                if (highlightRaw.toUpperCase() === "DNA") {
+                    targetSel = {nucleic: true};
+                    targetStyle = {sphere: {colorscheme: 'greenCarbon'}};
+                } else if (/[a-zA-Z]/.test(highlightRaw)) {
+                    targetSel = {resn: highlightRaw.toUpperCase().split(',').map(s=>s.trim())};
+                    targetStyle = {sphere: {color: 'magenta'}};
+                } else {
+                    targetSel = {resi: highlightRaw.split(',').map(s=>s.trim())};
+                    targetStyle = {sphere: {color: 'orange'}};
+                }
+            }
+
+            const newProtein = {
+                btnTitle: btnTitle,
+                title: title,
+                desc: desc,
+                point: point,
+                targetSel: targetSel,
+                targetStyle: targetStyle
+            };
+
+            // 커스텀 데이터(로컬)와 전체 데이터 둘 다 업데이트
+            customData[pdbId] = newProtein;
+            proteinData[pdbId] = newProtein;
+            localStorage.setItem('biomCustomData', JSON.stringify(customData));
+
+            renderButtons();
+            closeModal();
+            alert(`성공적으로 추가되었습니다!\n(이 데이터는 현재 컴퓨터에 임시 저장되며, 구글 시트에는 반영되지 않습니다.)`);
+        }
+
+        // 스크립트 시작
+        fetchAppScriptData();
+    </script>
+</body>
+</html>
