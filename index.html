@@ -176,7 +176,7 @@
             <div class="sidebar">
                 <h3 style="color:#90e0ef; margin-top:0;">관찰 리스트</h3>
                 <div id="button-container"></div>
-                <button class="add-data-btn" onclick="checkPassword()">+ 현장 데이터 추가</button>
+                <button class="add-data-btn" onclick="checkPassword()">+ 데이터 추가</button>
             </div>
             <div class="main-content">
                 <div class="viewer-box"><div id="container-3Dmoljs" style="width:100%; height:100%; position:absolute;"></div></div>
@@ -197,7 +197,7 @@
 
     <div id="add-modal" class="modal-overlay hidden">
         <div class="modal-box">
-            <h2>🧪 새로운 단백질 현장 추가</h2>
+            <h2>🧪 새로운 단백질 추가</h2>
             <div class="input-group">
                 <label>PDB ID (4자리 코드)</label>
                 <input type="text" id="input-pdb" placeholder="예: 1EMA" maxlength="4" style="text-transform: uppercase;">
@@ -232,7 +232,7 @@
     </div>
 
     <script>
-        // 회장님의 앱스 스크립트 웹 앱 URL
+        // 앱스 스크립트 웹 앱 URL
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxxVwrXfxX54cC_VGoQEw-ZWcwdw9WV9UY2vGhEruDGJQTST63l5YzYzcgefNzDSmrY/exec";
 
         let proteinData = {};      
@@ -370,7 +370,7 @@
 
         function checkPassword() {
             const adminPassword = "biom2026"; 
-            const pwd = prompt("현장 데이터 추가용 비밀번호를 입력하세요:");
+            const pwd = prompt("데이터 추가용 비밀번호를 입력하세요:");
             
             if (pwd === adminPassword) {
                 document.getElementById('add-modal').classList.remove('hidden');
